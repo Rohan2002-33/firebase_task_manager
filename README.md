@@ -1,17 +1,27 @@
-# firebase_task_manager
+# Firebase Task Manager
 
-A new Flutter project.
+Flutter app for the Module 16 assignment: Firebase Authentication, Cloud Firestore CRUD, FCM push notifications and local notifications.
 
-## Getting Started
+## Features
+- Email/password sign up and sign in, Google sign-in, password reset
+- Task CRUD in Cloud Firestore (title, description, due date, priority, completed status, created date)
+- Search, Pending/Completed filters, sort, delete confirmation dialog
+- FCM push notifications with device token handling
+- Local notification when a push arrives while the app is in the foreground
+- Background and terminated state handling
+- Notification tap opens the Task List, or the exact task when a taskId is sent
+- Different notification channel per task priority
 
-This project is a starting point for a Flutter application.
+## Tech
+Flutter, firebase_core, firebase_auth, cloud_firestore, firebase_messaging, flutter_local_notifications, google_sign_in
 
-A few resources to get you started if this is your first Flutter project:
+## Run
+1. `flutter pub get`
+2. `flutterfire configure` (use your own Firebase project)
+3. Add your SHA-1 and SHA-256 to the Firebase Android app (needed for Google sign-in)
+4. `flutter run`
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Test push notifications
+1. Run the app and copy the `FCM TOKEN` from the debug console.
+2. Firebase Console -> Messaging -> New campaign -> Send test message.
+3. To open a specific task, send a campaign with custom data `taskId=<document id>` and `priority=High`.
