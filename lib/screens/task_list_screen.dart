@@ -9,6 +9,7 @@ import '../widgets/common.dart';
 import '../widgets/delete_task_dialog.dart';
 import 'add_task_screen.dart';
 import 'edit_task_screen.dart';
+import '../services/notification_service.dart';
 
 enum TaskFilter { all, pending, completed }
 
@@ -33,7 +34,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
   void initState() {
     super.initState();
     _stream = TaskService.instance.watchTasks();
-    // NOTIFICATION_HOOK (added in Step 10)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService.instance.onHomeReady();
+    });
   }
 
   @override

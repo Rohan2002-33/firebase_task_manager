@@ -5,6 +5,7 @@ import '../models/task_model.dart';
 import '../services/task_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import '../services/notification_service.dart';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -61,8 +62,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         createdAt: DateTime.now(),
         course: 'General',
       );
-      await TaskService.instance.addTask(task);
-      // NOTIFICATION_HOOK (added in Step 10)
+            final newId = await TaskService.instance.addTask(task);
+      NotificationService.instance.showTaskNotification(
+        title: 'New Task',
+        body: 'You have a new task: ${task.title}',
+        taskId: newId,
+        priority: task.priority,
+      );
       nav.pop();
       messenger.showSnackBar(const SnackBar(content: Text('Task added')));
     } catch (e) {
