@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   AuthService._();
   static final AuthService instance = AuthService._();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _googleReady = false;
 
   Stream<User?> get authChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
@@ -16,22 +18,46 @@ class AuthService {
           email: email.trim(), password: password);
 
   Future<void> signInWithGoogle() async {
-    final provider = GoogleAuthProvider()..addScope('email');
-    await _auth.signInWithProvider(provider);
+    final google = GoogleSignIn.instance;
+    if (!_googleReady) {
+      await google.initialize();
+      _googleReady = true;
+    }
+
+    final account = await google.authenticate();
+    final idToken = account.authentication.idToken;
+    if (idToken == null || idToken.isEmpty) {
+      return;
+    }
+
+    final credential = GoogleAuthProvider.credential(idToken: idToken);
+    await _auth.signInWithCredential(credential);
   }
 
   Future<void> resetPassword(String email) =>
       _auth.sendPasswordResetEmail(email: email.trim());
 
-  Future<void> signOut() => _auth.signOut();
+  Future<void> signOut() async {
+    try {
+      if (_googleReady) await GoogleSignIn.instance.signOut();
+    } catch (_) {}
+    await _auth.signOut();
+  }
 
-  static bool isCancelled(Object e) =>
-      e is FirebaseAuthException &&
-      (e.code == 'canceled' ||
-          e.code == 'web-context-canceled' ||
-          e.code == 'popup-closed-by-user');
+  static bool isCancelled(Object e) {
+    if (e is GoogleSignInException) {
+      return e.code.name == 'canceled';
+    }
+    return e is FirebaseAuthException &&
+        (e.code == 'canceled' ||
+            e.code == 'web-context-canceled' ||
+            e.code == 'popup-closed-by-user');
+  }
 
   static String errorMessage(Object e) {
+    if (e is GoogleSignInException) {
+      return 'Google sign-in failed: ${e.description ?? e.code.name}';
+    }
     if (e is FirebaseAuthException) {
       switch (e.code) {
         case 'invalid-email':
